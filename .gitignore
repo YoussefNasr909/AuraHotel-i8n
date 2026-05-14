@@ -33,6 +33,7 @@ env/
 ENV/
 env.bak/
 venv.bak/
+.claude
 
 # Flask & Database
 instance/
