@@ -1,72 +1,88 @@
-# AURA Hotel
+# AURA Hotel - Global Personalization Engine
 
-A Flask hotel-booking demo with SQLAlchemy persistence, Selenium/pytest coverage, a refreshed responsive UI, sign-up flow, and lightweight internationalization for English, Arabic, and Chinese.
+AURA Hotel is a comprehensive Flask hotel-booking web application featuring a robust **Global Regional Personalization Engine**, SQLAlchemy database persistence, Selenium/pytest coverage, and a fully dynamic, responsive UI. 
 
-## Features
+The application is built to seamlessly adapt its language, currency, unit systems, time formats, and aesthetic color palettes based on a user's selected global region.
 
-- Room browsing with search, type filter, max-price validation, and room detail pages
-- Account sign-up with full name, email, password confirmation, password guidance, and preferred language
-- Login with the demo admin username or registered user email
-- Protected booking and reservation management flows
-- Availability checks, date validation, guest-capacity validation, and cancel states
-- Language selector with persisted preference and Arabic RTL support
-- Locale-aware client-side formatting using `Intl.NumberFormat` and `Intl.DateTimeFormat`
-- Neutral design tokens, accessible focus states, reduced-motion support, and responsive layouts
-- Admin dashboard with reservation stats and pytest history
+## ✨ Core Features
 
-## Quick Start
+- **Regional Personalization Engine**: Automatically sets local currency (e.g., USD, GBP, JPY), date/time formats (12h vs 24h), and unit systems (metric vs imperial) based on the user's region.
+- **Dynamic Aesthetic Color Themes**: Automatically applies one of 5 distinct color palettes to match the regional identity (Global Blue, Indigo Europe, Desert Gold, Imperial Crimson, Emerald Green).
+- **Lightweight Internationalization (i18n)**: Full language support for English, Arabic, and Chinese, complete with Right-to-Left (RTL) layout transitions.
+- **Client-Side Localization**: Uses modern `Intl.NumberFormat` and `Intl.DateTimeFormat` via `region.js` to instantly format currencies, numbers, and dates without server-side reloading.
+- **Booking & Reservations**: Room browsing, availability overlap checks, date validation, guest capacity limits, and a reservation management flow.
+- **Admin Dashboard**: Analytics, reservation stats, and historical pytest results.
+- **Modern UI/UX**: Neutral design tokens, accessible focus states, dynamic gradients using CSS `color-mix`, and smooth micro-animations.
+
+## 🚀 Quick Start
+
+Ensure you have Python installed, then run the following in your terminal (Powershell/Cmd):
 
 ```powershell
+# 1. Install Dependencies
 pip install -r requirements.txt
+
+# 2. Seed the Database (Creates all regional accounts & rooms)
 python seed_db.py
+
+# 3. Start the Flask Application
 python app.py
 ```
 
-The app runs at `http://127.0.0.1:5000`.
+The app will start at `http://127.0.0.1:5000`.
 
-## Demo Credentials
+## 🌍 Supported Regions & Demo Credentials
 
-| Username | Password |
-| --- | --- |
-| `admin` | `1234` |
+When you run `python seed_db.py`, the database is populated with multiple test accounts. Each account is strictly tied to a region, triggering a unique combination of languages, currencies, and color themes.
 
-Registered users can sign in with their email address.
+**Universal Password for all accounts:** `1234`
 
-## Project Structure
+| Region | Username | Language | Currency | Theme Palette |
+| :--- | :--- | :--- | :--- | :--- |
+| **Admin (US)** | `admin` | English | USD ($) | Global Blue |
+| **United Kingdom** | `user_gb` | English | GBP (£) | Royal Indigo |
+| **European Union** | `user_eu` | English | EUR (€) | Royal Indigo |
+| **Egypt** | `user_eg` | Arabic (RTL) | EGP (E£) | Desert Gold |
+| **Saudi Arabia** | `user_sa` | Arabic (RTL) | SAR (﷼) | Desert Gold |
+| **UAE** | `user_ae` | Arabic (RTL) | AED (د.إ) | Desert Gold |
+| **China** | `user_cn` | Chinese | CNY (¥) | Imperial Crimson |
+| **Japan** | `user_jp` | English | JPY (¥) | Imperial Crimson |
+| **India** | `user_in` | English | INR (₹) | Emerald Green |
+
+*Log in with any of these accounts to instantly see the entire application transform its UI, language, and formatting.*
+
+## 📁 Project Structure
 
 ```text
-app.py                 Flask routes, auth, booking workflow, and i18n helpers
-models.py              SQLAlchemy models
-seed_db.py             Demo data seeding
-requirements.txt       Runtime and test dependencies
-static/css/styles.css  Design system and responsive UI styles
-static/js/i18n-ui.js   Locale formatting and form enhancements
-templates/             Jinja pages
-translations/          en/ar/zh translation JSON files
-tests/                 pytest and Selenium tests
+app.py                 Flask routing, context processors, auth, and booking logic.
+models.py              SQLAlchemy schema (User, Room, Reservation).
+seed_db.py             Database population script for rooms and regional users.
+static/css/styles.css  Core design system, variables, layouts, and components.
+static/css/themes.css  Color palettes for the 5 global regional themes.
+static/js/region.js    Client-side Intl formatter and theme engine.
+templates/             Jinja2 HTML templates.
+translations/          JSON dictionary files (en, ar, zh).
+tests/                 Pytest and Selenium browser automation tests.
+instance/              (Generated) SQLite database directory.
 ```
 
-## Internationalization
+## 🛠️ Personalization Architecture
 
-Translations live in `translations/{language}.json`. To add another language:
+1. **Backend Injection**: When a user logs in, `app.py` looks up their `region` and injects the strict regional configurations (currency code, color theme name, layout direction) directly into the Jinja template rendering context via `@app.context_processor`.
+2. **HTML Data Attributes**: The `base.html` template receives these variables and applies them to the `<html>` tag as `data-color-theme` and `dir`, as well as on UI elements as `data-currency` and `data-currency-code`.
+3. **CSS Execution**: `themes.css` catches the `data-color-theme` attribute and overrides the global `--primary` and `--accent` CSS variables. `styles.css` handles the rendering dynamically using `color-mix()`.
+4. **JS Formatting**: `region.js` reads the HTML data-attributes, grabs the user's localized browser environment, and loops through the DOM to rewrite raw numbers/dates into highly accurate local formats using `Intl.NumberFormat`.
 
-1. Add a language entry to `LANGUAGES` in `app.py`.
-2. Create `translations/<code>.json` with the same keys as `translations/en.json`.
-3. Set the correct `dir` value, especially for RTL languages.
-4. Keep user-facing strings in templates behind `t("key")`.
+## 🧪 Testing
 
-## Testing
+The project uses `pytest` and `selenium` to ensure reliability.
 
 ```powershell
+# Run all tests
 pytest -v
+
+# Generate a detailed HTML report
 pytest -v --html=report.html --self-contained-html
 ```
 
-The dashboard reads `test_results/latest.json` and `test_results/history.json`, which are written by `tests/conftest.py` after pytest runs.
-
-## Production Notes
-
-- Replace the SQLite demo account creation in `/signup` with the production identity API when backend auth is ready.
-- Move `app.secret_key` to an environment variable before deploying.
-- Add CSRF protection before exposing write forms publicly.
-- Keep color semantics paired with text/icons so status is never communicated by color alone.
+Test results are automatically written to `test_results/latest.json` which is consumed by the Admin Dashboard.
