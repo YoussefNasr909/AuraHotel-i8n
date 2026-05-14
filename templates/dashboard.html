@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+{% set title = t("dashboard.title") %}
+{% block content %}
+
+<div class="page-heading mb-3">
+  <div>
+    <span class="eyebrow">{{ t("nav.dashboard") }}</span>
+    <h1 class="h3 fw-bold mb-1">{{ t("dashboard.heading") }}</h1>
+    <p class="text-muted mb-0">{{ t("dashboard.subtitle") }}</p>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-4">
+    <div class="card card-soft stat-card">
+      <div class="card-body">
+        <div class="text-muted small">{{ t("dashboard.rooms") }}</div>
+        <div class="h3 fw-bold mb-0" data-test="dash-rooms">{{ total_rooms }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card card-soft stat-card">
+      <div class="card-body">
+        <div class="text-muted small">{{ t("dashboard.reservations") }}</div>
+        <div class="h3 fw-bold mb-0" data-test="dash-res">{{ total_res }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card card-soft stat-card">
+      <div class="card-body">
+        <div class="text-muted small">{{ t("dashboard.booked_cancelled") }}</div>
+        <div class="h5 fw-bold mb-0" data-test="dash-booked-cancelled">{{ booked }} / {{ cancelled }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card card-soft mb-4">
+  <div class="card-body p-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+      <div>
+        <h2 class="h5 fw-bold mb-1">{{ t("dashboard.test_title") }}</h2>
+        <p class="text-muted mb-0">{{ t("dashboard.test_subtitle") }}</p>
+      </div>
+      {% if latest_test %}
+        {% if latest_test.failed == 0 and latest_test.exitstatus == 0 %}
+          <span class="badge text-bg-success" data-test="test-status"><i class="bi bi-check2-circle" aria-hidden="true"></i> {{ t("dashboard.last_pass") }}</span>
+        {% else %}
+          <span class="badge text-bg-danger" data-test="test-status"><i class="bi bi-exclamation-octagon" aria-hidden="true"></i> {{ t("dashboard.last_fail") }}</span>
+        {% endif %}
+      {% else %}
+        <span class="badge text-bg-secondary" data-test="test-status"><i class="bi bi-info-circle" aria-hidden="true"></i> {{ t("dashboard.no_runs") }}</span>
+      {% endif %}
+    </div>
+
+    {% if latest_test %}
+      <div class="row g-3 mt-2">
+        <div class="col-md-3">
+          <div class="glass-card p-3 rounded-4">
+            <div class="text-muted small">{{ t("dashboard.total") }}</div>
+            <div class="h4 fw-bold mb-0" data-test="test-total">{{ latest_test.total }}</div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="glass-card p-3 rounded-4">
+            <div class="text-muted small">{{ t("dashboard.passed") }}</div>
+            <div class="h4 fw-bold mb-0" data-test="test-passed">{{ latest_test.passed }}</div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="glass-card p-3 rounded-4">
+            <div class="text-muted small">{{ t("dashboard.failed") }}</div>
+            <div class="h4 fw-bold mb-0" data-test="test-failed">{{ latest_test.failed }}</div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="glass-card p-3 rounded-4">
+            <div class="text-muted small">{{ t("dashboard.skipped") }}</div>
+            <div class="h4 fw-bold mb-0" data-test="test-skipped">{{ latest_test.skipped }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="text-muted small mt-3" data-test="test-time">
+        <i class="bi bi-clock-history" aria-hidden="true"></i>
+        {{ t("dashboard.last_run_at") }} <time class="fw-semibold" datetime="{{ latest_test.timestamp }}" data-date="{{ latest_test.timestamp }}">{{ latest_test.timestamp }}</time>
+      </div>
+
+      <hr class="my-4">
+
+      <h3 class="h6 fw-bold mb-2">{{ t("dashboard.trend") }}</h3>
+      <canvas id="trendChart" height="120" aria-label="{{ t('dashboard.trend') }}"></canvas>
+    {% else %}
+      <div class="alert alert-info mt-3 mb-0">
+        <i class="bi bi-info-circle" aria-hidden="true"></i>
+        <span>{{ t("dashboard.run_tests") }}</span>
+        <div class="mt-2">
+          <code>pytest -v --html=report.html --self-contained-html</code>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card card-soft">
+  <div class="card-body">
+    <h2 class="h6 fw-bold mb-3">{{ t("dashboard.recent") }}</h2>
+    <div class="list-group list-group-flush">
+      {% for r in recent %}
+      <div class="list-group-item d-flex justify-content-between align-items-start gap-3">
+        <div>
+          <div class="fw-semibold">{{ r.room.name }}</div>
+          <div class="text-muted small">
+            <time datetime="{{ r.check_in.isoformat() }}" data-date="{{ r.check_in.isoformat() }}">{{ format_date(r.check_in) }}</time>
+            <span aria-hidden="true">→</span>
+            <time datetime="{{ r.check_out.isoformat() }}" data-date="{{ r.check_out.isoformat() }}">{{ format_date(r.check_out) }}</time>
+            <span aria-hidden="true">·</span> {{ t("common.guests") }} {{ r.guests }}
+          </div>
+        </div>
+        <span class="badge {% if r.status=='Booked' %}text-bg-success{% else %}text-bg-secondary{% endif %}">
+          {% if r.status == "Booked" %}
+            <i class="bi bi-check2-circle" aria-hidden="true"></i> {{ t("reservations.booked") }}
+          {% else %}
+            <i class="bi bi-dash-circle" aria-hidden="true"></i> {{ t("reservations.cancelled") }}
+          {% endif %}
+        </span>
+      </div>
+      {% else %}
+        <div class="text-muted">{{ t("dashboard.no_recent") }}</div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+{% if test_history %}
+<script>
+  const historyData = {{ test_history|tojson }};
+  const locale = document.documentElement.dataset.locale || "en-US";
+  const labels = historyData.map((run) => new Intl.DateTimeFormat(locale, {
+    dateStyle: "short",
+    timeStyle: "short"
+  }).format(new Date(run.timestamp)));
+  const passed = historyData.map((run) => run.passed);
+  const failed = historyData.map((run) => run.failed);
+
+  const ctx = document.getElementById("trendChart");
+  new Chart(ctx, {
+    type: "line",
+    data: {
+      labels,
+      datasets: [
+        { label: {{ t("dashboard.passed")|tojson }}, data: passed, tension: 0.25 },
+        { label: {{ t("dashboard.failed")|tojson }}, data: failed, tension: 0.25 }
+      ]
+    },
+    options: {
+      plugins: { legend: { position: "bottom" } },
+      scales: {
+        x: { ticks: { maxRotation: 45, minRotation: 45 } },
+        y: { beginAtZero: true, precision: 0 }
+      }
+    }
+  });
+</script>
+{% endif %}
+{% endblock %}

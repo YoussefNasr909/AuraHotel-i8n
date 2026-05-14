@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% set title = t("signup.title") %}
+{% block content %}
+
+<div class="auth-shell auth-shell-wide">
+  <div class="auth-panel card card-soft">
+    <div class="card-body p-4 p-md-5">
+      <span class="eyebrow">{{ t("nav.signup") }}</span>
+      <h1 class="h3 fw-bold mb-2">{{ t("signup.heading") }}</h1>
+      <p class="text-muted mb-4">{{ t("signup.subtitle") }}</p>
+
+      <form method="post" novalidate data-signup-form data-loading-form>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label" for="signup-full-name">{{ t("signup.full_name") }}</label>
+            <input id="signup-full-name" name="full_name" class="form-control" autocomplete="name" required value="{{ form_data.full_name or '' }}" placeholder="{{ t('signup.full_name_placeholder') }}">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="signup-email">{{ t("common.email") }}</label>
+            <input id="signup-email" name="email" class="form-control" type="email" inputmode="email" autocomplete="email" required value="{{ form_data.email or '' }}" placeholder="{{ t('signup.email_placeholder') }}">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="signup-password">{{ t("common.password") }}</label>
+            <input id="signup-password" name="password" class="form-control" type="password" autocomplete="new-password" required minlength="8" placeholder="{{ t('signup.password_placeholder') }}" aria-describedby="password-guidance password-strength">
+            <div id="password-guidance" class="form-text">{{ t("signup.password_help") }}</div>
+            <div
+              id="password-strength"
+              class="password-meter"
+              aria-live="polite"
+              data-score-1="{{ t('signup.password_strength_1') }}"
+              data-score-2="{{ t('signup.password_strength_2') }}"
+              data-score-3="{{ t('signup.password_strength_3') }}"
+              data-score-4="{{ t('signup.password_strength_4') }}"
+              data-match-error="{{ t('signup.password_match_error') }}"
+            ></div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="signup-confirm-password">{{ t("signup.confirm_password") }}</label>
+            <input id="signup-confirm-password" name="confirm_password" class="form-control" type="password" autocomplete="new-password" required minlength="8" placeholder="{{ t('signup.confirm_password_placeholder') }}">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="signup-language">{{ t("signup.preferred_language") }}</label>
+            <select id="signup-language" name="preferred_language" class="form-select" required>
+              {% for code, lang in languages.items() %}
+                <option value="{{ code }}" {% if (form_data.preferred_language or current_lang) == code %}selected{% endif %}>{{ lang.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="signup-region">{{ t("settings.region") }}</label>
+            <select id="signup-region" name="region" class="form-select" required>
+              {% for code, reg in regions.items() %}
+                <option value="{{ code }}" {% if (form_data.region or current_region) == code %}selected{% endif %}>{{ reg.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <div class="notice-card mt-4">
+          <i class="bi bi-info-circle" aria-hidden="true"></i>
+          <span>{{ t("signup.terms_text") }}</span>
+        </div>
+        <div class="notice-card subtle mt-2">
+          <i class="bi bi-code-slash" aria-hidden="true"></i>
+          <span>{{ t("signup.success_note") }}</span>
+        </div>
+
+        <button class="btn btn-primary w-100 mt-4" data-test="register-submit" data-loading-label="{{ t('common.loading') }}" type="submit">
+          {{ t("signup.submit") }} <i class="bi bi-person-plus" aria-hidden="true"></i>
+        </button>
+      </form>
+
+      <hr class="my-4">
+      <div class="text-center small text-muted">
+        {{ t("signup.have_account") }} <a href="{{ url_for('login') }}" class="fw-semibold">{{ t("signup.signin_link") }}</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

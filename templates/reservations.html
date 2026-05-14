@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% set title = t("reservations.title") %}
+{% block content %}
+
+<div class="page-heading mb-3">
+  <div>
+    <span class="eyebrow">{{ t("nav.reservations") }}</span>
+    <h1 class="h3 fw-bold mb-1">{{ t("reservations.heading") }}</h1>
+    <p class="text-muted mb-0">{{ t("reservations.subtitle") }}</p>
+  </div>
+  <a class="btn btn-primary" href="{{ url_for('booking') }}">
+    <i class="bi bi-plus-lg" aria-hidden="true"></i> {{ t("reservations.new") }}
+  </a>
+</div>
+
+<div class="card card-soft mb-4">
+  <div class="card-body">
+    <form class="row g-3 align-items-end" method="get" action="{{ url_for('reservations') }}" role="search">
+      <div class="col-md-7">
+        <label class="form-label" for="res-search">{{ t("reservations.search_label") }}</label>
+        <input id="res-search" class="form-control" data-test="res-search" name="q" value="{{ q }}" placeholder="{{ t('reservations.search_placeholder') }}">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label" for="res-status">{{ t("common.status") }}</label>
+        <select id="res-status" class="form-select" data-test="res-status" name="status">
+          <option value="">{{ t("common.all") }}</option>
+          <option value="Booked" {% if status=="Booked" %}selected{% endif %}>{{ t("reservations.booked") }}</option>
+          <option value="Cancelled" {% if status=="Cancelled" %}selected{% endif %}>{{ t("reservations.cancelled") }}</option>
+        </select>
+      </div>
+      <div class="col-md-2 d-grid">
+        <button class="btn btn-outline-primary" type="submit"><i class="bi bi-search" aria-hidden="true"></i> {{ t("common.apply") }}</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card card-soft">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead>
+        <tr>
+          <th scope="col">#</th>
+          <th scope="col">{{ t("common.room") }}</th>
+          <th scope="col">{{ t("common.dates") }}</th>
+          <th scope="col">{{ t("common.guests") }}</th>
+          <th scope="col">{{ t("common.status") }}</th>
+          <th scope="col" class="text-end">{{ t("common.actions") }}</th>
+        </tr>
+      </thead>
+
+      <tbody data-test="res-table">
+        {% for r in reservations %}
+        <tr data-test="res-row-{{ r.id }}">
+          <td class="text-muted">#{{ r.id }}</td>
+          <td>
+            <div class="fw-semibold">{{ r.room.name }}</div>
+            <div class="text-muted small">{{ r.room.type }}</div>
+          </td>
+          <td>
+            <div class="fw-semibold">
+              <time datetime="{{ r.check_in.isoformat() }}" data-date="{{ r.check_in.isoformat() }}">{{ format_date(r.check_in) }}</time>
+              <span aria-hidden="true">→</span>
+              <time datetime="{{ r.check_out.isoformat() }}" data-date="{{ r.check_out.isoformat() }}">{{ format_date(r.check_out) }}</time>
+            </div>
+          </td>
+          <td>{{ r.guests }}</td>
+          <td>
+            <span class="badge {% if r.status=='Booked' %}text-bg-success{% else %}text-bg-secondary{% endif %}">
+              {% if r.status == "Booked" %}
+                <i class="bi bi-check2-circle" aria-hidden="true"></i> {{ t("reservations.booked") }}
+              {% else %}
+                <i class="bi bi-dash-circle" aria-hidden="true"></i> {{ t("reservations.cancelled") }}
+              {% endif %}
+            </span>
+          </td>
+          <td class="text-end">
+            {% if r.status != "Cancelled" %}
+            <form method="post" action="{{ url_for('cancel_reservation', res_id=r.id) }}" onsubmit="return confirm('{{ t('reservations.cancel_confirm') }}');">
+              <button class="btn btn-sm btn-outline-danger" data-test="res-cancel-{{ r.id }}" type="submit">
+                {{ t("reservations.cancel") }} <i class="bi bi-x-circle" aria-hidden="true"></i>
+              </button>
+            </form>
+            {% else %}
+              <span class="text-muted small">{{ t("common.no_actions") }}</span>
+            {% endif %}
+          </td>
+        </tr>
+
+        {% else %}
+        <tr>
+          <td colspan="6" class="text-center text-muted py-4" data-test="res-empty">
+            {{ t("reservations.empty") }}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}

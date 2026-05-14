@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% set title = room.name ~ " • " ~ t("room_detail.title") %}
+{% block content %}
+
+<div class="page-heading mb-3">
+  <div>
+    <span class="eyebrow">{{ t("room_detail.heading") }}</span>
+    <h1 class="h3 fw-bold mb-1">{{ room.name }}</h1>
+    <p class="text-muted mb-0">{{ room.type }} <span aria-hidden="true">·</span> {{ t("room_detail.capacity_note", capacity=room.capacity) }}</p>
+  </div>
+  <a class="btn btn-outline-light" href="{{ url_for('rooms') }}">
+    <i class="bi bi-arrow-left" aria-hidden="true"></i> {{ t("common.back_rooms") }}
+  </a>
+</div>
+
+<div class="row g-4 align-items-start">
+  <div class="col-lg-7">
+    <article class="card card-soft overflow-hidden">
+      <img src="{{ room.image }}" class="room-detail-image" alt="{{ room.name }}">
+      <div class="card-body p-4">
+        <h2 class="h5 fw-bold">{{ t("room_detail.summary") }}</h2>
+        <p class="text-muted mb-0">{{ t(room.desc) }}</p>
+      </div>
+    </article>
+  </div>
+  <aside class="col-lg-5">
+    <div class="card card-soft sticky-summary">
+      <div class="card-body p-4">
+        <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+          <div>
+            <div class="text-muted small">{{ room.type }}</div>
+            <div class="h4 fw-bold mb-0" data-currency="{{ room.price }}" data-currency-code="{{ current_currency }}">{{ format_currency(room.price) }}</div>
+            <div class="text-muted small">{{ t("common.per_night") }}</div>
+          </div>
+          <div class="icon-bubble"><i class="bi bi-moon-stars" aria-hidden="true"></i></div>
+        </div>
+
+        <h3 class="h6 fw-bold">{{ t("room_detail.amenities") }}</h3>
+        <ul class="amenity-list">
+          {% for amenity in room.amenities %}
+            <li><i class="bi bi-check2-circle" aria-hidden="true"></i> {{ amenity }}</li>
+          {% endfor %}
+        </ul>
+
+        <a class="btn btn-primary w-100 mt-3" href="{{ url_for('booking', room_id=room.id) }}">
+          {{ t("room_detail.reserve") }} <i class="bi bi-arrow-right" aria-hidden="true"></i>
+        </a>
+      </div>
+    </div>
+  </aside>
+</div>
+
+{% endblock %}

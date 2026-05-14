@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% set title = t("login.title") %}
+{% block content %}
+
+<div class="auth-shell">
+  <div class="auth-panel card card-soft">
+    <div class="card-body p-4 p-md-5">
+      <span class="eyebrow">{{ t("nav.login") }}</span>
+      <h1 class="h3 fw-bold mb-2">{{ t("login.heading") }}</h1>
+      <p class="text-muted mb-4">{{ t("login.subtitle") }}</p>
+
+      <form method="post" data-loading-form>
+        <div class="mb-3">
+          <label class="form-label" for="login-username">{{ t("login.identifier") }}</label>
+          <input id="login-username" name="username" data-test="login-username" class="form-control" autocomplete="username email" required placeholder="{{ t('login.identifier_placeholder') }}">
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="login-password">{{ t("common.password") }}</label>
+          <input id="login-password" name="password" data-test="login-password" class="form-control" type="password" autocomplete="current-password" required placeholder="{{ t('login.password_placeholder') }}">
+        </div>
+        <button class="btn btn-primary w-100" data-test="login-submit" data-loading-label="{{ t('common.loading') }}" type="submit">
+          {{ t("login.submit") }} <i class="bi bi-box-arrow-in-right" aria-hidden="true"></i>
+        </button>
+      </form>
+
+      <hr class="my-4">
+      <div class="text-center small text-muted">
+        {{ t("login.no_account") }} <a href="{{ url_for('register') }}" class="fw-semibold">{{ t("login.signup_link") }}</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
