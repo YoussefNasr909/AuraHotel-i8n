@@ -38,6 +38,12 @@
       </ul>
 
       <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
+        <li class="nav-item me-2 d-flex align-items-center">
+          <button id="theme-toggle-btn" class="btn btn-sm btn-outline-light rounded-circle d-flex align-items-center justify-content-center" aria-label="Toggle theme" style="width: 32px; height: 32px; padding: 0;">
+            <i class="bi bi-moon-fill dark-icon d-none"></i>
+            <i class="bi bi-sun-fill light-icon d-none"></i>
+          </button>
+        </li>
         <li class="nav-item">
           <form class="language-form" method="post" action="{{ url_for('set_language') }}">
             <input type="hidden" name="next" value="{{ request.full_path if request.query_string else request.path }}">
@@ -106,6 +112,60 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="{{ url_for('static', filename='js/region.js') }}"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const htmlEl = document.documentElement;
+    const btn = document.getElementById('theme-toggle-btn');
+    const darkIcon = btn.querySelector('.dark-icon');
+    const lightIcon = btn.querySelector('.light-icon');
+
+    const determineActiveMode = () => {
+      let mode = htmlEl.getAttribute('data-theme-mode');
+      if (!mode || mode === 'system') {
+        mode = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+      }
+      return mode;
+    };
+
+    const updateIcons = (mode) => {
+      if (mode === 'light') {
+        darkIcon.classList.remove('d-none');
+        lightIcon.classList.add('d-none');
+      } else {
+        lightIcon.classList.remove('d-none');
+        darkIcon.classList.add('d-none');
+      }
+    };
+
+    const applyTheme = (mode) => {
+      htmlEl.setAttribute('data-theme-mode', mode);
+      updateIcons(mode);
+    };
+
+    const currentMode = determineActiveMode();
+    updateIcons(currentMode);
+
+    btn.addEventListener('click', () => {
+      const activeMode = determineActiveMode();
+      const newMode = activeMode === 'light' ? 'dark' : 'light';
+
+      applyTheme(newMode);
+
+      fetch('{{ url_for("set_theme") }}', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({theme_mode: newMode})
+      }).catch(e => console.error('Theme save error:', e));
+    });
+
+    window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', (e) => {
+      const currentMode = htmlEl.getAttribute('data-theme-mode');
+      if (!currentMode || currentMode === 'system') {
+        updateIcons(e.matches ? 'light' : 'dark');
+      }
+    });
+  });
+</script>
 {% block scripts %}{% endblock %}
 </body>
 </html>

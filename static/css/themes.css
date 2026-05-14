@@ -184,6 +184,8 @@ html {
     --primary-active: #834f24;
   }
 }
+
+/* ============================================
    data-theme-mode="dark" forces dark scheme
    data-theme-mode="light" forces light scheme
    data-theme-mode="system" follows OS

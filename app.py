@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash, g, make_response, abort
+from flask import Flask, render_template, request, redirect, url_for, session, flash, g, make_response, abort, jsonify
 from functools import wraps
 from datetime import datetime
 import json
@@ -243,6 +243,21 @@ def set_language():
     response = make_response(redirect(redirect_to))
     response.set_cookie("aura_lang", session.get("lang", DEFAULT_LANGUAGE), max_age=60 * 60 * 24 * 365, samesite="Lax")
     return response
+
+@app.route("/set_theme", methods=["POST"])
+def set_theme():
+    data = request.get_json()
+    if data and "theme_mode" in data:
+        mode = data["theme_mode"]
+        if mode in VALID_THEME_MODES:
+            session["theme_mode"] = mode
+            if session.get("logged_in"):
+                user = User.query.get(session["user_id"])
+                if user:
+                    user.theme_mode = mode
+                    db.session.commit()
+            return jsonify({"status": "success"})
+    return jsonify({"status": "error", "message": "Invalid theme mode"}), 400
 
 
 
