@@ -9,6 +9,7 @@ The application is built to seamlessly adapt its language, currency, unit system
 - **Regional Personalization Engine**: Automatically sets local currency (e.g., USD, GBP, JPY), date/time formats (12h vs 24h), and unit systems (metric vs imperial) based on the user's region.
 - **Dynamic Aesthetic Color Themes**: Automatically applies one of 5 distinct color palettes to match the regional identity (Global Blue, Indigo Europe, Desert Gold, Imperial Crimson, Emerald Green).
 - **Lightweight Internationalization (i18n)**: Full language support for English, Arabic, and Chinese, complete with Right-to-Left (RTL) layout transitions.
+- **Simple OpenSSL Integration**: Includes `pyOpenSSL`, a small health endpoint, and an optional local HTTPS mode for development.
 - **Client-Side Localization**: Uses modern `Intl.NumberFormat` and `Intl.DateTimeFormat` via `region.js` to instantly format currencies, numbers, and dates without server-side reloading.
 - **Booking & Reservations**: Room browsing, availability overlap checks, date validation, guest capacity limits, and a reservation management flow.
 - **Admin Dashboard**: Analytics, reservation stats, and historical pytest results.
@@ -30,6 +31,15 @@ python app.py
 ```
 
 The app will start at `http://127.0.0.1:5000`.
+
+If you want simple local HTTPS for development:
+
+```powershell
+$env:FLASK_USE_HTTPS="1"
+python app.py
+```
+
+Then open `https://127.0.0.1:5000`.
 
 ## 🌍 Supported Regions & Demo Credentials
 
@@ -86,3 +96,11 @@ pytest -v --html=report.html --self-contained-html
 ```
 
 Test results are automatically written to `test_results/latest.json` which is consumed by the Admin Dashboard.
+
+## OpenSSL Check
+
+You can verify the integration at:
+
+- `GET /health/openssl`
+
+It returns whether `pyOpenSSL` is available, the OpenSSL version string, and whether local HTTPS mode is enabled.

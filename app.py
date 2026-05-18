@@ -9,6 +9,11 @@ from models import db, User, Room, Reservation
 from flask_migrate import Migrate
 from werkzeug.security import generate_password_hash, check_password_hash
 
+try:
+    from OpenSSL import SSL
+except ImportError:
+    SSL = None
+
 
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "change-this-secret")
@@ -49,6 +54,23 @@ VALID_THEME_MODES = {"light", "dark", "system"}
 VALID_UNIT_SYSTEMS = {"metric", "imperial"}
 VALID_TEMP_UNITS = {"celsius", "fahrenheit"}
 VALID_TIME_FORMATS = {"12h", "24h"}
+
+
+def get_openssl_info():
+    if SSL is None:
+        return {
+            "available": False,
+            "version": None,
+        }
+
+    version = SSL.SSLeay_version(SSL.SSLEAY_VERSION)
+    if isinstance(version, bytes):
+        version = version.decode("utf-8", errors="ignore")
+
+    return {
+        "available": True,
+        "version": version,
+    }
 
 
 def load_translations():
@@ -258,6 +280,13 @@ def set_theme():
                     db.session.commit()
             return jsonify({"status": "success"})
     return jsonify({"status": "error", "message": "Invalid theme mode"}), 400
+
+
+@app.route("/health/openssl")
+def openssl_health():
+    info = get_openssl_info()
+    info["https_enabled"] = os.getenv("FLASK_USE_HTTPS") == "1"
+    return jsonify(info)
 
 
 
@@ -572,4 +601,5 @@ def test_reset():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    use_https = os.getenv("FLASK_USE_HTTPS") == "1"
+    app.run(debug=True, ssl_context="adhoc" if use_https else None)

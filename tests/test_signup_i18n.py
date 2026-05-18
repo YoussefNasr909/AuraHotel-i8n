@@ -30,3 +30,15 @@ def test_language_selector_sets_arabic_rtl():
     assert response.status_code == 200
     assert b'lang="ar"' in response.data
     assert b'dir="rtl"' in response.data
+
+
+def test_openssl_health_endpoint_exposes_status():
+    client = app.test_client()
+
+    response = client.get("/health/openssl")
+    data = response.get_json()
+
+    assert response.status_code == 200
+    assert "available" in data
+    assert "version" in data
+    assert "https_enabled" in data
