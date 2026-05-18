@@ -97,10 +97,39 @@ pytest -v --html=report.html --self-contained-html
 
 Test results are automatically written to `test_results/latest.json` which is consumed by the Admin Dashboard.
 
-## OpenSSL Check
+## 🔒 How to Verify OpenSSL is Working
 
-You can verify the integration at:
+To make sure OpenSSL is fully working in your project, you can verify it in two ways: via the automated test suite and by running the local server in HTTPS mode.
 
-- `GET /health/openssl`
+### 1. Run the Local Server with HTTPS Enabled
+This tests if Flask can successfully use OpenSSL to generate a temporary SSL certificate and secure your traffic.
 
-It returns whether `pyOpenSSL` is available, the OpenSSL version string, and whether local HTTPS mode is enabled.
+Run this command in your PowerShell terminal:
+```powershell
+$env:FLASK_USE_HTTPS="1"; .\.venv\Scripts\python app.py
+```
+
+**What to look for:**
+Look at your terminal output. You should see the server running on `https` instead of `http`:
+```text
+ * Running on https://127.0.0.1:5000
+```
+While the server is running, open your browser and go to `https://127.0.0.1:5000/health/openssl`. You will see a JSON response confirming that OpenSSL is available and `https_enabled` is true! *(Note: your browser may warn you about a "self-signed certificate," which is completely normal for local development. Proceed past the warning.)* 
+
+*(Press `CTRL+C` to stop the server when you're done).*
+
+### 2. Run the OpenSSL Automated Test
+Your project already has a specific test written to verify the OpenSSL diagnostics endpoint. You can run just this test to confirm it works programmatically. 
+
+Run this command in your PowerShell terminal:
+```powershell
+.\.venv\Scripts\python -m pytest tests/test_signup_i18n.py::test_openssl_health_endpoint_exposes_status -v
+```
+
+**What to look for:**
+You should see a green `PASSED` message like this:
+```text
+tests/test_signup_i18n.py::test_openssl_health_endpoint_exposes_status PASSED [100%]
+```
+
+If both of these checks work, your OpenSSL integration is perfectly configured and healthy!
