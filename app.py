@@ -274,7 +274,7 @@ def set_theme():
         if mode in VALID_THEME_MODES:
             session["theme_mode"] = mode
             if session.get("logged_in"):
-                user = User.query.get(session["user_id"])
+                user = db.session.get(User, session["user_id"])
                 if user:
                     user.theme_mode = mode
                     db.session.commit()
@@ -340,7 +340,7 @@ def rooms():
 
 @app.route("/rooms/<int:room_id>")
 def room_detail(room_id):
-    room = Room.query.get_or_404(room_id)
+    room = db.get_or_404(Room, room_id)
     return render_template("room_detail.html", room=room)
 
 
@@ -455,7 +455,7 @@ def booking():
     room_id = request.args.get("room_id", "").strip()
     selected_room = None
     if room_id.isdigit():
-        selected_room = Room.query.get(int(room_id))
+        selected_room = db.session.get(Room, int(room_id))
 
     if request.method == "POST":
         chosen_room_id = request.form.get("room_id", "").strip()
@@ -467,7 +467,7 @@ def booking():
             flash(translate("flash.booking_required"), "danger")
             return render_template("booking.html", rooms=Room.query.all(), selected_room=selected_room)
 
-        room = Room.query.get(int(chosen_room_id))
+        room = db.session.get(Room, int(chosen_room_id))
         if not room:
             flash(translate("flash.room_not_found"), "danger")
             return render_template("booking.html", rooms=Room.query.all(), selected_room=selected_room)
